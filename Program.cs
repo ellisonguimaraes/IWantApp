@@ -1,9 +1,14 @@
+using FluentValidation;
+using IWantApp.Domain.Products;
 using IWantApp.Endpoints.Categories;
+using IWantApp.Endpoints.Validators;
 using IWantApp.Infra.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlServerConnectionString"));
+
+builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
