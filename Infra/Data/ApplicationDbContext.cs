@@ -19,7 +19,6 @@ public class ApplicationDbContext : DbContext
         // Não funciona devido ao GenericEntityTypeConfiguration
         //modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration());
         //modelBuilder.ApplyConfiguration(new ProductEntityTypeConfiguration());
-        modelBuilder.Ignore<Notification>();
 
         new ProductEntityTypeConfiguration().Configure(modelBuilder.Entity<Product>());
         new CategoryEntityTypeConfiguration().Configure(modelBuilder.Entity<Category>());
