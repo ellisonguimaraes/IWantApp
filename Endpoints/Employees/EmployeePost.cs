@@ -27,7 +27,7 @@ public class EmployeePost
         var claimsResult = userManager.AddClaimsAsync(user, userClaims).Result;
 
         if (!claimsResult.Succeeded)
-            return Results.BadRequest(claimsResult.Errors.First());
+            return Results.ValidationProblem(claimsResult.Errors.ConvertToProblemDetails());
 
         return Results.Created($"{Template}/{user.Id}", user.Id);
     }
