@@ -1,13 +1,25 @@
 using FluentValidation;
 using IWantApp.Domain.Products;
 using IWantApp.Endpoints.Categories;
+using IWantApp.Endpoints.Employees;
 using IWantApp.Endpoints.Validators;
 using IWantApp.Infra.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlServerConnectionString"));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(/*options =>
+{
+    
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequiredLength = 3;
+}*/).AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
 
@@ -62,5 +74,21 @@ app.MapMethods(CategoryPut.Template, CategoryPut.Methods, CategoryPut.Handle)
 app.MapMethods(CategoryDelete.Template, CategoryDelete.Methods, CategoryDelete.Handle)
     .Produces(StatusCodes.Status204NoContent)
     .Produces(StatusCodes.Status404NotFound);
+
+app.MapMethods(EmployeePost.Template, EmployeePost.Methods, EmployeePost.Handle)
+    .Produces(StatusCodes.Status201Created)
+    .Produces(StatusCodes.Status400BadRequest);
+
+app.MapMethods(EmployeeGetAll.Template, EmployeeGetAll.Methods, EmployeeGetAll.Handle)
+    .Produces<List<EmployeeResponse>>(StatusCodes.Status200OK);
+
+app.MapMethods(EmployeeGet.Template, EmployeeGet.Methods, EmployeeGet.Handle)
+    .Produces<EmployeeResponse>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound);
+
+app.MapMethods(EmployeePut.Template, EmployeePut.Methods, EmployeePut.Handle)
+    .Produces(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound)
+    .Produces<Dictionary<string, string[]>>(StatusCodes.Status400BadRequest);
 
 app.Run();
