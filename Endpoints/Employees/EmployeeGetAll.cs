@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
@@ -10,6 +11,7 @@ public class EmployeeGetAll
     public static string[] Methods => new string[] { HttpMethod.Get.ToString() };
     public static Delegate Handle => Action;
 
+    [Authorize(Policy = "Employee005Policy")]
     public static IResult Action([FromQuery] int page, [FromQuery] int rows, [FromServices] IConfiguration configuration)
     {
         var db = new SqlConnection(configuration.GetConnectionString("SqlServerConnectionString"));

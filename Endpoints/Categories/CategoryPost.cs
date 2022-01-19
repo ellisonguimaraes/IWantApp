@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using IWantApp.Domain.Products;
 using IWantApp.Infra.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IWantApp.Endpoints.Categories;
 
@@ -11,11 +13,15 @@ public class CategoryPost
     public static string[] Methods => new string[] { HttpMethod.Post.ToString() };
     public static Delegate Handle => Action;
 
+    [Authorize]
     public static IResult Action([FromBody] CategoryRequest categoryRequest, 
                                  [FromServices] ApplicationDbContext context, 
-                                 [FromServices] IValidator<Category> validator)
+                                 [FromServices] IValidator<Category> validator,
+                                 HttpContext httpContext)
     {
-        var category = new Category(categoryRequest.Name, "Post Created Test", "Post Edited Test");
+        var userId = httpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+        var category = new Category(categoryRequest.Name, userId, userId);
 
         var result = validator.Validate(category);
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -9,6 +10,8 @@ public class EmployeePut
     public static string Template => "/employees/{id}";
     public static string[] Methods => new string[] { HttpMethod.Put.ToString() };
     public static Delegate Handle => Action;
+
+    [Authorize(Policy = "Employee005Policy")]
     public static IResult Action([FromServices] UserManager<IdentityUser> userManager,
                                  [FromBody] EmployeeRequest employeeRequest,
                                  [FromRoute] string id)

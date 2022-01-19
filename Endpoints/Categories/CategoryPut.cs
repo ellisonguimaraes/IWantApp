@@ -1,7 +1,9 @@
 ﻿using FluentValidation;
 using IWantApp.Domain.Products;
 using IWantApp.Infra.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace IWantApp.Endpoints.Categories;
 
@@ -11,11 +13,15 @@ public class CategoryPut
     public static string[] Methods => new string[] { HttpMethod.Put.ToString() };
     public static Delegate Handle => Action;
 
+    [Authorize]
     public static IResult Action([FromRoute] Guid id, 
                                  [FromBody] CategoryRequest categoryRequest, 
                                  [FromServices] ApplicationDbContext context,
-                                 [FromServices] IValidator<Category> validator)
+                                 [FromServices] IValidator<Category> validator,
+                                 HttpContext httpContext)
     {
+        var userId = httpContext.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
         var category = context.Categories.Where(c => c.Id == id).FirstOrDefault();
 
         if (category == null) 
@@ -23,7 +29,7 @@ public class CategoryPut
         
         category.Name = categoryRequest.Name;
         category.Active = categoryRequest.Active;
-        category.EditedBy = "Edited for route";
+        category.EditedBy = userId;
 
         var result = validator.Validate(category);
 

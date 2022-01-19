@@ -16,6 +16,4 @@ public static class ProblemDetailsExtensions
         dictionary.Add("Error", errors.Select(e => e.Description).ToArray());
         return dictionary;
     }
-
-
 }

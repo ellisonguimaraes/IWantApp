@@ -1,16 +1,23 @@
 using FluentValidation;
 using IWantApp.Domain.Products;
+using IWantApp.Endpoints.Auth;
 using IWantApp.Endpoints.Categories;
 using IWantApp.Endpoints.Employees;
 using IWantApp.Endpoints.Validators;
 using IWantApp.Infra.Data;
+using IWantApp.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.OpenApi.Models;;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Database EF configuration
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlServerConnectionString"));
 
+// Identity configure
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(/*options =>
 {
     
@@ -21,8 +28,33 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(/*options =>
     options.Password.RequiredLength = 3;
 }*/).AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
+// Authorization configure
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("EmployeePolicy", p => p.RequireAuthenticatedUser().RequireClaim("EmployeeCode"));
+    options.AddPolicy("Employee005Policy", p => p.RequireAuthenticatedUser().RequireClaim("EmployeeCode", "005"));
+});
 
+// Authentication configure
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateActor = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtBearerTokenSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
+    };
+});
+
+// Swagger configure
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
     {
@@ -41,6 +73,10 @@ builder.Services.AddSwaggerGen(c =>
     }
 );
 
+// Dependency injection (DI)
+builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
+builder.Services.AddScoped<IJwTUtils, JwTUtils>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -52,6 +88,9 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("swagger/v1/swagger.json", "Minimal API");
     });
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
@@ -90,5 +129,9 @@ app.MapMethods(EmployeePut.Template, EmployeePut.Methods, EmployeePut.Handle)
     .Produces(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status404NotFound)
     .Produces<Dictionary<string, string[]>>(StatusCodes.Status400BadRequest);
+
+app.MapMethods(GenerateTokenPost.Template, GenerateTokenPost.Methods, GenerateTokenPost.Handle)
+    .Produces(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status400BadRequest);
 
 app.Run();

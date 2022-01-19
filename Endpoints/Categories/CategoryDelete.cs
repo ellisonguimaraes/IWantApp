@@ -1,4 +1,5 @@
 ﻿using IWantApp.Infra.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IWantApp.Endpoints.Categories;
@@ -9,6 +10,7 @@ public class CategoryDelete
     public static string[] Methods => new string[] { HttpMethod.Delete.ToString() };
     public static Delegate Handle => Action;
 
+    [Authorize]
     public static IResult Action([FromRoute] Guid id, [FromServices] ApplicationDbContext context)
     {
         var category = context.Categories.Where(c => c.Id == id).FirstOrDefault();
