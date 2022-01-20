@@ -9,10 +9,10 @@ public class EmployeePost
 {
     public static string Template => "/employees";
     public static string[] Methods => new string[] { HttpMethod.Post.ToString() };
-    public static Delegate Handle => Action;
+    public static Delegate Handle => ActionAsync;
 
     [Authorize(Policy = "Employee005Policy")]
-    public static IResult Action([FromBody] EmployeeRequest employeeRequest,
+    public static async Task<IResult> ActionAsync([FromBody] EmployeeRequest employeeRequest,
                                  [FromServices] UserManager<IdentityUser> userManager)
     {
         var user = new IdentityUser
@@ -21,7 +21,7 @@ public class EmployeePost
             Email = employeeRequest.Email
         };
 
-        var result = userManager.CreateAsync(user, employeeRequest.Password).Result;
+        var result = await userManager.CreateAsync(user, employeeRequest.Password);
 
         if (!result.Succeeded)
             return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
@@ -32,7 +32,7 @@ public class EmployeePost
             new Claim("EmployeeCode", employeeRequest.EmployeeCode)
         };
 
-        var resultClaims = userManager.AddClaimsAsync(user, userClaims).Result;
+        var resultClaims = await userManager.AddClaimsAsync(user, userClaims);
 
         if (!result.Succeeded)
             return Results.ValidationProblem(resultClaims.Errors.ConvertToProblemDetails());

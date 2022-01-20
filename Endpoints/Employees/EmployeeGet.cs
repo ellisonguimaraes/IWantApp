@@ -9,17 +9,17 @@ public class EmployeeGet
 {
     public static string Template => "/employees/{id}";
     public static string[] Methods => new string[] { HttpMethod.Get.ToString() };
-    public static Delegate Handle => Action;
+    public static Delegate Handle => ActionAsync;
 
     [Authorize(Policy = "Employee005Policy")]
-    public static IResult Action([FromRoute] string id, [FromServices] IConfiguration configuration)
+    public static async Task<IResult> ActionAsync([FromRoute] string id, [FromServices] IConfiguration configuration)
     {
         var db = new SqlConnection(configuration.GetConnectionString("SqlServerConnectionString"));
 
         var query = "SELECT u.Id as Id, Email, ClaimValue as Name FROM AspNetUsers u INNER JOIN AspNetUserClaims c " +
                     "ON u.Id = @id";
 
-        var employee = db.Query<EmployeeResponse>(query, new { id }).FirstOrDefault();
+        var employee = (await db.QueryAsync<EmployeeResponse>(query, new { id })).FirstOrDefault();
 
         if (employee == null)
             return Results.NotFound();

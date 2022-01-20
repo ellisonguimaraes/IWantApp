@@ -17,10 +17,10 @@ public class JwTUtils : IJwTUtils
         _configuration = configuration;
     }
 
-    public string GenerateAccessToken(IdentityUser user)
+    public async Task<string> GenerateAccessToken(IdentityUser user)
     {
         // Subject create with userClaims
-        var userClaims = _userManager.GetClaimsAsync(user).Result;
+        var userClaims = await _userManager.GetClaimsAsync(user);
 
         var subject = new ClaimsIdentity(new Claim[]
         {

@@ -4,5 +4,5 @@ namespace IWantApp.Services;
 
 public interface IJwTUtils
 {
-    string GenerateAccessToken(IdentityUser user);
+    Task<string> GenerateAccessToken(IdentityUser user);
 }

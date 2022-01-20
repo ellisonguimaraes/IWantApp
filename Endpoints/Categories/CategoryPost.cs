@@ -11,10 +11,10 @@ public class CategoryPost
 {
     public static string Template => "/categories";
     public static string[] Methods => new string[] { HttpMethod.Post.ToString() };
-    public static Delegate Handle => Action;
+    public static Delegate Handle => ActionAsync;
 
     [Authorize]
-    public static IResult Action([FromBody] CategoryRequest categoryRequest, 
+    public static async Task<IResult> ActionAsync([FromBody] CategoryRequest categoryRequest, 
                                  [FromServices] ApplicationDbContext context, 
                                  [FromServices] IValidator<Category> validator,
                                  HttpContext httpContext)
@@ -28,8 +28,8 @@ public class CategoryPost
         if (!result.IsValid)
             return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
 
-        context.Categories.Add(category);
-        context.SaveChanges();
+        await context.Categories.AddAsync(category);
+        await context.SaveChangesAsync();
 
         return Results.Created($"{Template}/{category.Id}", category.Id);
     }

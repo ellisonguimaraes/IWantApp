@@ -9,10 +9,10 @@ public class EmployeeGetAll
 {
     public static string Template => "/employees";
     public static string[] Methods => new string[] { HttpMethod.Get.ToString() };
-    public static Delegate Handle => Action;
+    public static Delegate Handle => ActionAsync;
 
     [Authorize(Policy = "Employee005Policy")]
-    public static IResult Action([FromQuery] int page, [FromQuery] int rows, [FromServices] IConfiguration configuration)
+    public static async Task<IResult> ActionAsync([FromQuery] int page, [FromQuery] int rows, [FromServices] IConfiguration configuration)
     {
         var db = new SqlConnection(configuration.GetConnectionString("SqlServerConnectionString"));
 
@@ -21,7 +21,7 @@ public class EmployeeGetAll
                     "ORDER BY Name " +
                     "OFFSET (@page - 1) * @rows ROWS FETCH NEXT @rows ROWS ONLY";
 
-        var employees = db.Query<EmployeeResponse>(query, new { page, rows });
+        var employees = await db.QueryAsync<EmployeeResponse>(query, new { page, rows });
 
         return Results.Ok(employees);
     }

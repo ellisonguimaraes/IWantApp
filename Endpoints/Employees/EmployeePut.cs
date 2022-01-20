@@ -9,19 +9,19 @@ public class EmployeePut
 {
     public static string Template => "/employees/{id}";
     public static string[] Methods => new string[] { HttpMethod.Put.ToString() };
-    public static Delegate Handle => Action;
+    public static Delegate Handle => ActionAsync;
 
     [Authorize(Policy = "Employee005Policy")]
-    public static IResult Action([FromServices] UserManager<IdentityUser> userManager,
+    public static async Task<IResult> ActionAsync([FromServices] UserManager<IdentityUser> userManager,
                                  [FromBody] EmployeeRequest employeeRequest,
                                  [FromRoute] string id)
     {
-        var user = userManager.FindByIdAsync(id).Result;
+        var user = await userManager.FindByIdAsync(id);
 
         if (user == null)
             return Results.NotFound();
 
-        var claims = userManager.GetClaimsAsync(user).Result;
+        var claims = await userManager.GetClaimsAsync(user);
 
         if (claims.Count <= 0)
         {
@@ -40,17 +40,17 @@ public class EmployeePut
         user.Email = employeeRequest.Email;
         user.PasswordHash = userManager.PasswordHasher.HashPassword(user, employeeRequest.Password);
 
-        var result = userManager.ReplaceClaimAsync(user, claimName, new Claim("Name", employeeRequest.Name)).Result;
+        var result = await userManager.ReplaceClaimAsync(user, claimName, new Claim("Name", employeeRequest.Name));
 
         if (!result.Succeeded)
             return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
 
-        result = userManager.ReplaceClaimAsync(user, claimCode, new Claim("EmployeeCode", employeeRequest.EmployeeCode)).Result;
+        result = await userManager.ReplaceClaimAsync(user, claimCode, new Claim("EmployeeCode", employeeRequest.EmployeeCode));
 
         if (!result.Succeeded)
             return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
 
-        result = userManager.UpdateAsync(user).Result;
+        result = await userManager.UpdateAsync(user);
 
         if (!result.Succeeded)
             return Results.ValidationProblem(result.Errors.ConvertToProblemDetails());
