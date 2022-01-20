@@ -14,5 +14,7 @@ public class CategoryEntityTypeConfiguration : GenericEntityTypeConfiguration<Ca
         // Property Mapping
         builder.Property(c => c.Name).HasColumnName("name").HasMaxLength(150).IsRequired();
         builder.Property(c => c.Active).HasColumnName("has_active").IsRequired();
+
+        base.Configure(builder);
     }
 }

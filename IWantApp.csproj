@@ -21,6 +21,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Endpoints\Auth\NovaPasta\" />
+  </ItemGroup>
+
 	<!-- SWAGGER XML COMMENTS -->
 	<PropertyGroup>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
