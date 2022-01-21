@@ -6,7 +6,7 @@ public class Category : Entity
     public string Name { get; set; }
     public bool Active { get; set; }
 
-    public virtual Product Product { get; set; }
+    public virtual List<Product> Products { get; set; }
 
     public Category(string name, string createdBy, string editedBy)
     {

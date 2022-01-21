@@ -12,18 +12,20 @@ public class GenerateTokenPost
     public static Delegate Handle => Action;
     
     [AllowAnonymous]
-    public static IResult Action([FromBody] LoginRequest loginRequest, 
+    public static async Task<IResult> Action([FromBody] LoginRequest loginRequest, 
                                  [FromServices] UserManager<IdentityUser> userManager,
                                  [FromServices] IJwTUtils jwTUtils)
     {
-        var user = userManager.FindByEmailAsync(loginRequest.Email).Result;
+        var user = await userManager.FindByEmailAsync(loginRequest.Email);
 
         if (user == null)
             return Results.BadRequest();
 
-        if (!userManager.CheckPasswordAsync(user, loginRequest.Password).Result)
+        if (!(await userManager.CheckPasswordAsync(user, loginRequest.Password)))
             return Results.BadRequest();
 
-        return Results.Ok(jwTUtils.GenerateAccessToken(user));
+        var token = await jwTUtils.GenerateAccessTokenAsync(user);
+
+        return Results.Ok(token);
     }
 }

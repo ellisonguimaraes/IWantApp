@@ -20,8 +20,8 @@ public class ProductEntityTypeConfiguration : GenericEntityTypeConfiguration<Pro
 
         // Relationship Mapping
         builder.HasOne<Category>(p => p.Category)
-            .WithOne(c => c.Product)
-            .HasForeignKey<Product>(p => p.CategoryId);
+            .WithMany(c => c.Products)
+            .HasForeignKey(p => p.CategoryId);
 
         base.Configure(builder);
     }

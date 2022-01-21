@@ -11,7 +11,7 @@ public class EmployeePost
     public static string[] Methods => new string[] { HttpMethod.Post.ToString() };
     public static Delegate Handle => ActionAsync;
 
-    [Authorize(Policy = "Employee005Policy")]
+    [AllowAnonymous]
     public static async Task<IResult> ActionAsync([FromBody] EmployeeRequest employeeRequest,
                                  [FromServices] UserManager<IdentityUser> userManager)
     {

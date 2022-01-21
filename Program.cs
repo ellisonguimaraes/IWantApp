@@ -3,6 +3,7 @@ using IWantApp.Domain.Products;
 using IWantApp.Endpoints.Auth;
 using IWantApp.Endpoints.Categories;
 using IWantApp.Endpoints.Employees;
+using IWantApp.Endpoints.Products;
 using IWantApp.Endpoints.Validators;
 using IWantApp.Infra.Data;
 using IWantApp.Services;
@@ -18,15 +19,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration.GetConnectionString("SqlServerConnectionString"));
 
 // Identity configure
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(/*options =>
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireDigit = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
     options.Password.RequiredLength = 3;
-}*/).AddEntityFrameworkStores<ApplicationDbContext>();
+}).AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Authorization configure
 builder.Services.AddAuthorization(options =>
@@ -75,6 +75,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // Dependency injection (DI)
 builder.Services.AddScoped<IValidator<Category>, CategoryValidator>();
+builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddScoped<IJwTUtils, JwTUtils>();
 
 var app = builder.Build();
@@ -94,6 +95,7 @@ app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
+// Category Routes
 app.MapMethods(CategoryGetAll.Template, CategoryGetAll.Methods, CategoryGetAll.Handle)
     .Produces<List<CategoryResponse>>(StatusCodes.Status200OK);
 
@@ -114,6 +116,7 @@ app.MapMethods(CategoryDelete.Template, CategoryDelete.Methods, CategoryDelete.H
     .Produces(StatusCodes.Status204NoContent)
     .Produces(StatusCodes.Status404NotFound);
 
+// Employee Routes
 app.MapMethods(EmployeePost.Template, EmployeePost.Methods, EmployeePost.Handle)
     .Produces(StatusCodes.Status201Created)
     .Produces(StatusCodes.Status400BadRequest);
@@ -130,8 +133,31 @@ app.MapMethods(EmployeePut.Template, EmployeePut.Methods, EmployeePut.Handle)
     .Produces(StatusCodes.Status404NotFound)
     .Produces<Dictionary<string, string[]>>(StatusCodes.Status400BadRequest);
 
+// Generate Token Route
 app.MapMethods(GenerateTokenPost.Template, GenerateTokenPost.Methods, GenerateTokenPost.Handle)
     .Produces(StatusCodes.Status200OK)
     .Produces(StatusCodes.Status400BadRequest);
+
+// Product Routes
+app.MapMethods(ProductGetAll.Template, ProductGetAll.Methods, ProductGetAll.Handle)
+    .Produces<List<ProductResponse>>(StatusCodes.Status200OK);
+
+app.MapMethods(ProductGet.Template, ProductGet.Methods, ProductGet.Handle)
+    .Produces<ProductResponse>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound);
+
+app.MapMethods(ProductPost.Template, ProductPost.Methods, ProductPost.Handle)
+    .Produces<Guid>(StatusCodes.Status201Created)
+    .Produces(StatusCodes.Status400BadRequest);
+
+app.MapMethods(ProductPut.Template, ProductPut.Methods, ProductPut.Handle)
+    .Produces(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound)
+    .Produces<Dictionary<string, string[]>>(StatusCodes.Status400BadRequest);
+
+app.MapMethods(ProductDelete.Template, ProductDelete.Methods, ProductDelete.Handle)
+    .Produces(StatusCodes.Status204NoContent)
+    .Produces(StatusCodes.Status404NotFound);
+
 
 app.Run();

@@ -17,7 +17,7 @@ public class JwTUtils : IJwTUtils
         _configuration = configuration;
     }
 
-    public async Task<string> GenerateAccessToken(IdentityUser user)
+    public async Task<string> GenerateAccessTokenAsync(IdentityUser user)
     {
         // Subject create with userClaims
         var userClaims = await _userManager.GetClaimsAsync(user);
